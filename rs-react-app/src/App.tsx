@@ -1,122 +1,122 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { Component } from 'react'
 import './App.css'
+import { fetchCharacters } from './api/charactersApi'
+import { CrashSimulator } from './components/CrashSimulator'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ResultsSection } from './components/ResultsSection'
+import { SearchPanel } from './components/SearchPanel'
+import type { Character } from './types/character'
 
-function App() {
-  const [count, setCount] = useState(0)
+interface AppState {
+  searchInput: string
+  submittedSearch: string
+  items: Character[]
+  isLoading: boolean
+  errorMessage: string | null
+  shouldCrash: boolean
+}
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const STORAGE_KEY = 'character-search-term'
 
-      <div className="ticks"></div>
+class App extends Component<object, AppState> {
+    handleResetError = (): void => {
+      this.setState({ shouldCrash: false })
+    }
+  state: AppState = {
+    searchInput: '',
+    submittedSearch: '',
+    items: [],
+    isLoading: false,
+    errorMessage: null,
+    shouldCrash: false,
+  }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  componentDidMount(): void {
+    const savedTerm = localStorage.getItem(STORAGE_KEY) ?? ''
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    this.setState(
+      {
+        searchInput: savedTerm,
+        submittedSearch: savedTerm,
+      },
+      () => {
+        this.loadItems(savedTerm)
+      },
+    )
+  }
+
+  handleInputChange = (value: string): void => {
+    this.setState({ searchInput: value })
+  }
+
+  handleSearch = (): void => {
+    const trimmedSearch = this.state.searchInput.trim()
+
+    if (trimmedSearch === this.state.submittedSearch) {
+      return
+    }
+
+    localStorage.setItem(STORAGE_KEY, trimmedSearch)
+
+    this.setState(
+      {
+        searchInput: trimmedSearch,
+        submittedSearch: trimmedSearch,
+      },
+      () => {
+        this.loadItems(trimmedSearch)
+      },
+    )
+  }
+
+  handleCrashTest = (): void => {
+    this.setState({ shouldCrash: true })
+  }
+
+  loadItems = async (term: string): Promise<void> => {
+    this.setState({ isLoading: true, errorMessage: null })
+
+    try {
+      const items = await fetchCharacters(term)
+      this.setState({ items })
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Something unexpected happened while loading results.'
+
+      this.setState({ items: [], errorMessage: message })
+    } finally {
+      this.setState({ isLoading: false })
+    }
+  }
+
+  render() {
+    const { searchInput, isLoading, items, errorMessage, shouldCrash } = this.state
+
+    return (
+      <ErrorBoundary onReset={this.handleResetError}>
+        <main className="app-shell">
+          <SearchPanel
+            value={searchInput}
+            isLoading={isLoading}
+            onInputChange={this.handleInputChange}
+            onSearch={this.handleSearch}
+          />
+
+          <ResultsSection items={items} isLoading={isLoading} errorMessage={errorMessage} />
+
+          <div className="crash-zone">
+            <button type="button" className="danger-button" onClick={this.handleCrashTest}>
+              Trigger Error
+            </button>
+          </div>
+
+          <CrashSimulator shouldCrash={shouldCrash} />
+        </main>
+      </ErrorBoundary>
+    )
+  }
 }
 
 export default App

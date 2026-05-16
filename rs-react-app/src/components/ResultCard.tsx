@@ -1,0 +1,22 @@
+import { Component } from 'react'
+import type { Character } from '../types/character'
+
+interface ResultCardProps {
+  item: Character
+}
+
+export class ResultCard extends Component<ResultCardProps> {
+  render() {
+    const { item } = this.props
+
+    return (
+      <article className="result-card">
+        <img className="result-card-image" src={item.image} alt={item.name} loading="lazy" />
+        <div className="result-card-body">
+          <h3>{item.name}</h3>
+          <p>{item.description}</p>
+        </div>
+      </article>
+    )
+  }
+}

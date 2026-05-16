@@ -9,7 +9,7 @@ const BASE_URL = 'https://rickandmortyapi.com/api/character/'
 const toCharacter = (item: CharacterApiItem): Character => ({
   id: item.id,
   name: item.name,
-  description: `${item.species} • ${item.status} • ${item.gender}`,
+  description: `${item.species}, ${item.status}, ${item.gender}`,
   image: item.image,
 })
 

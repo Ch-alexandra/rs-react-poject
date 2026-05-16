@@ -34,7 +34,7 @@ describe('fetchCharacters', () => {
       {
         id: 1,
         name: 'Rick Sanchez',
-        description: 'Human • Alive • Male',
+        description: 'Human, Alive, Male',
         image: 'https://example.com/rick.png',
       },
     ])

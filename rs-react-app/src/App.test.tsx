@@ -36,7 +36,7 @@ describe('App', () => {
   })
 
   it('loads the saved search term from localStorage on mount', async () => {
-    localStorage.setItem('character-search-term', 'Morty')
+    localStorage.setItem('character-search-term', '"Morty"')
     fetchCharactersMock.mockResolvedValue(characterListFixture())
 
     render(<App />)
@@ -47,7 +47,7 @@ describe('App', () => {
   })
 
   it('loads initial data when localStorage is empty', async () => {
-    fetchCharactersMock.mockResolvedValue([])
+    fetchCharactersMock.mockResolvedValue({ results: [], totalPages: 1 })
 
     render(<App />)
 
@@ -61,7 +61,7 @@ describe('App', () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
 
     fetchCharactersMock
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ results: [], totalPages: 1 })
       .mockResolvedValueOnce(characterListFixture())
 
     render(<App />)
@@ -72,7 +72,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Search' }))
 
     await waitFor(() => expect(fetchCharactersMock).toHaveBeenNthCalledWith(2, 'Rick'))
-    expect(setItemSpy).toHaveBeenCalledWith('character-search-term', 'Rick')
+    expect(setItemSpy).toHaveBeenCalledWith('character-search-term', '"Rick"')
     expect(screen.getByRole('textbox', { name: 'Search characters' })).toHaveValue('Rick')
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument()
 
@@ -82,7 +82,7 @@ describe('App', () => {
   it('does not re-run the same search term', async () => {
     const user = userEvent.setup()
 
-    localStorage.setItem('character-search-term', 'Rick')
+    localStorage.setItem('character-search-term', '"Rick"')
     fetchCharactersMock.mockResolvedValue(characterListFixture())
 
     render(<App />)
@@ -118,7 +118,7 @@ describe('App', () => {
   it('shows the error boundary fallback when the crash button is used and recovers after reset', async () => {
     const user = userEvent.setup()
 
-    fetchCharactersMock.mockResolvedValue([])
+    fetchCharactersMock.mockResolvedValue({ results: [], totalPages: 1 })
 
     render(<App />)
 

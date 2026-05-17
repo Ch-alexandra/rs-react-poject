@@ -18,7 +18,7 @@ describe('ResultsSection', () => {
   })
 
   it('renders the results list when data is available', () => {
-    render(<ResultsSection items={characterListFixture()} isLoading={false} errorMessage={null} />)
+    render(<ResultsSection items={characterListFixture().results} isLoading={false} errorMessage={null} />)
 
     expect(screen.getByText('Rick Sanchez')).toBeInTheDocument()
     expect(screen.getByText('Morty Smith')).toBeInTheDocument()

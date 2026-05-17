@@ -11,9 +11,9 @@ describe('CardList', () => {
   })
 
   it('renders one result card per item', () => {
-    const items = characterListFixture()
+    const { results } = characterListFixture()
 
-    render(<CardList items={items} />)
+    render(<CardList items={results} />)
 
     expect(screen.getByText('Rick Sanchez')).toBeInTheDocument()
     expect(screen.getByText('Morty Smith')).toBeInTheDocument()

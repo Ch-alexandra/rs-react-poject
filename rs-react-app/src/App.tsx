@@ -5,12 +5,13 @@ import { CrashSimulator } from './components/CrashSimulator'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ResultsSection } from './components/ResultsSection'
 import { SearchPanel } from './components/SearchPanel'
+import { useLocalStorage } from './hooks/useLocalStorage'
 import type { Character } from './types/character'
 
 const STORAGE_KEY = 'character-search-term'
 
 function App() {
-  const savedTerm = localStorage.getItem(STORAGE_KEY) ?? ''
+  const [savedTerm, setSavedTerm] = useLocalStorage<string>(STORAGE_KEY, '')
   const [searchInput, setSearchInput] = useState(savedTerm)
   const [submittedSearch, setSubmittedSearch] = useState(savedTerm)
   const [items, setItems] = useState<Character[]>([])
@@ -21,7 +22,7 @@ function App() {
   useEffect(() => {
     fetchCharacters(submittedSearch)
       .then((result) => {
-        setItems(result)
+        setItems(result.results)
         setErrorMessage(null)
       })
       .catch((error) => {
@@ -48,7 +49,7 @@ function App() {
       return
     }
 
-    localStorage.setItem(STORAGE_KEY, trimmedSearch)
+    setSavedTerm(trimmedSearch)
     setSearchInput(trimmedSearch)
     setIsLoading(true)
     setSubmittedSearch(trimmedSearch)

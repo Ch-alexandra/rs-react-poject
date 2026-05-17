@@ -2,6 +2,7 @@ import type {
   Character,
   CharacterApiItem,
   CharacterApiResponse,
+  CharacterListResult,
 } from '../types/character'
 
 const BASE_URL = 'https://rickandmortyapi.com/api/character/'
@@ -32,9 +33,12 @@ const fetchWithDelay = async (url: string): Promise<Response> => {
   return fetch(url)
 }
 
-export const fetchCharacters = async (term: string): Promise<Character[]> => {
+export const fetchCharacters = async (
+  term: string,
+  page: number = 1,
+): Promise<CharacterListResult> => {
   const trimmedTerm = term.trim()
-  const query = new URLSearchParams({ page: '1' })
+  const query = new URLSearchParams({ page: String(page) })
 
   if (trimmedTerm) {
     query.set('name', trimmedTerm)
@@ -47,5 +51,8 @@ export const fetchCharacters = async (term: string): Promise<Character[]> => {
   }
 
   const payload = (await response.json()) as CharacterApiResponse
-  return payload.results.map(toCharacter)
+  return {
+    results: payload.results.map(toCharacter),
+    totalPages: payload.info.pages,
+  }
 }

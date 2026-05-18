@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import './App.css'
 import { fetchCharacters } from './api/charactersApi'
 import { CrashSimulator } from './components/CrashSimulator'
+import { DetailPanel } from './components/DetailPanel'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Pagination } from './components/Pagination'
 import { ResultsSection } from './components/ResultsSection'
@@ -15,6 +16,7 @@ const STORAGE_KEY = 'character-search-term'
 function App() {
   const [searchParams, setSearchParams] = useSearchParams()
   const currentPage = Math.max(1, Number(searchParams.get('page') ?? 1))
+  const hasDetail = Boolean(searchParams.get('details'))
 
   const [savedTerm, setSavedTerm] = useLocalStorage<string>(STORAGE_KEY, '')
   const [searchInput, setSearchInput] = useState(savedTerm)
@@ -92,29 +94,33 @@ function App() {
 
   return (
     <ErrorBoundary onReset={handleResetError}>
-      <main className="app-shell">
-        <SearchPanel
-          value={searchInput}
-          isLoading={isLoading}
-          onInputChange={handleInputChange}
-          onSearch={handleSearch}
-        />
+      <main className={`app-shell${hasDetail ? ' app-shell--split' : ''}`}>
+        <div className="app-main">
+          <SearchPanel
+            value={searchInput}
+            isLoading={isLoading}
+            onInputChange={handleInputChange}
+            onSearch={handleSearch}
+          />
 
-        <ResultsSection items={items} isLoading={isLoading} errorMessage={errorMessage} />
+          <ResultsSection items={items} isLoading={isLoading} errorMessage={errorMessage} />
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
 
-        <div className="crash-zone">
-          <button type="button" className="danger-button" onClick={handleCrashTest}>
-            Trigger Error
-          </button>
+          <div className="crash-zone">
+            <button type="button" className="danger-button" onClick={handleCrashTest}>
+              Trigger Error
+            </button>
+          </div>
+
+          <CrashSimulator shouldCrash={shouldCrash} />
         </div>
 
-        <CrashSimulator shouldCrash={shouldCrash} />
+        {hasDetail && <DetailPanel />}
       </main>
     </ErrorBoundary>
   )

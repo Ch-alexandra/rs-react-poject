@@ -9,6 +9,23 @@
   box-sizing: border-box;
 }
 
+.app-shell--split {
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: 1fr;
+  align-items: start;
+}
+
+.app-main {
+  display: contents;
+}
+
+.app-shell--split .app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+  min-width: 0;
+}
+
 .search-section,
 .results-section {
   border: 1px solid var(--panel-border);
@@ -114,6 +131,13 @@
   padding: 0.875rem;
   text-align: left;
   background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.result-card:hover {
+  border-color: var(--portal);
+  box-shadow: 0 2px 8px rgba(47, 184, 168, 0.15);
 }
 
 .result-card::before {

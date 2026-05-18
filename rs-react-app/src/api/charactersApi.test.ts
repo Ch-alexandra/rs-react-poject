@@ -43,7 +43,8 @@ describe('fetchCharacters', () => {
       totalPages: 3,
     })
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://rickandmortyapi.com/api/character/?page=1&name=Rick',
+      '/rickandmorty/api/character/?page=1&name=Rick',
+      { signal: undefined },
     )
   })
 
@@ -61,7 +62,7 @@ describe('fetchCharacters', () => {
     await vi.advanceTimersByTimeAsync(220)
     await promise
 
-    expect(fetchMock).toHaveBeenCalledWith('https://rickandmortyapi.com/api/character/?page=1')
+    expect(fetchMock).toHaveBeenCalledWith('/rickandmorty/api/character/?page=1', { signal: undefined })
   })
 
   it('throws the API error message when the request fails with JSON details', async () => {

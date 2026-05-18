@@ -5,7 +5,10 @@ import type {
   CharacterListResult,
 } from '../types/character'
 
-const BASE_URL = 'https://rickandmortyapi.com/api/character/'
+const BASE_URL =
+  import.meta.env.DEV
+    ? '/rickandmorty/api/character/'
+    : 'https://rickandmortyapi.com/api/character/'
 
 const toCharacter = (item: CharacterApiItem): Character => ({
   id: item.id,
@@ -25,17 +28,22 @@ const readErrorMessage = async (response: Response): Promise<string> => {
   }
 }
 
-const fetchWithDelay = async (url: string): Promise<Response> => {
-  await new Promise<void>((resolve) => {
-    setTimeout(() => resolve(), 220)
+const fetchWithDelay = async (url: string, signal?: AbortSignal): Promise<Response> => {
+  await new Promise<void>((resolve, reject) => {
+    const id = setTimeout(() => resolve(), 220)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(id)
+      reject(new DOMException('Aborted', 'AbortError'))
+    })
   })
 
-  return fetch(url)
+  return fetch(url, { signal })
 }
 
 export const fetchCharacters = async (
   term: string,
   page: number = 1,
+  signal?: AbortSignal,
 ): Promise<CharacterListResult> => {
   const trimmedTerm = term.trim()
   const query = new URLSearchParams({ page: String(page) })
@@ -44,7 +52,7 @@ export const fetchCharacters = async (
     query.set('name', trimmedTerm)
   }
 
-  const response = await fetchWithDelay(`${BASE_URL}?${query.toString()}`)
+  const response = await fetchWithDelay(`${BASE_URL}?${query.toString()}`, signal)
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response))

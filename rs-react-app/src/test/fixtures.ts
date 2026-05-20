@@ -1,4 +1,4 @@
-import type { Character, CharacterApiItem } from '../types/character'
+import type { Character, CharacterApiItem, CharacterListResult } from '../types/character'
 
 export const characterFixture = (overrides: Partial<Character> = {}): Character => ({
   id: 1,
@@ -20,12 +20,15 @@ export const characterApiItemFixture = (
   ...overrides,
 })
 
-export const characterListFixture = (): Character[] => [
-  characterFixture(),
-  characterFixture({
-    id: 2,
-    name: 'Morty Smith',
-    description: 'Human, Alive, Male',
-    image: 'https://example.com/morty.png',
-  }),
-]
+export const characterListFixture = (): CharacterListResult => ({
+  results: [
+    characterFixture(),
+    characterFixture({
+      id: 2,
+      name: 'Morty Smith',
+      description: 'Human, Alive, Male',
+      image: 'https://example.com/morty.png',
+    }),
+  ],
+  totalPages: 1,
+})

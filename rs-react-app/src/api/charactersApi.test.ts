@@ -16,6 +16,7 @@ describe('fetchCharacters', () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
+          info: { pages: 3 },
           results: [characterApiItemFixture()],
         }),
         {
@@ -30,22 +31,26 @@ describe('fetchCharacters', () => {
     const promise = fetchCharacters('  Rick  ')
     await vi.advanceTimersByTimeAsync(220)
 
-    await expect(promise).resolves.toEqual([
-      {
-        id: 1,
-        name: 'Rick Sanchez',
-        description: 'Human, Alive, Male',
-        image: 'https://example.com/rick.png',
-      },
-    ])
+    await expect(promise).resolves.toEqual({
+      results: [
+        {
+          id: 1,
+          name: 'Rick Sanchez',
+          description: 'Human, Alive, Male',
+          image: 'https://example.com/rick.png',
+        },
+      ],
+      totalPages: 3,
+    })
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://rickandmortyapi.com/api/character/?page=1&name=Rick',
+      '/rickandmorty/api/character/?page=1&name=Rick',
+      { signal: undefined },
     )
   })
 
   it('requests the first page without a name filter when the search term is empty', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ results: [] }), {
+      new Response(JSON.stringify({ info: { pages: 1 }, results: [] }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
@@ -57,7 +62,7 @@ describe('fetchCharacters', () => {
     await vi.advanceTimersByTimeAsync(220)
     await promise
 
-    expect(fetchMock).toHaveBeenCalledWith('https://rickandmortyapi.com/api/character/?page=1')
+    expect(fetchMock).toHaveBeenCalledWith('/rickandmorty/api/character/?page=1', { signal: undefined })
   })
 
   it('throws the API error message when the request fails with JSON details', async () => {

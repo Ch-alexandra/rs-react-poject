@@ -1,9 +1,17 @@
 import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import App from './App'
 import { fetchCharacters } from './api/charactersApi'
 import { characterListFixture } from './test/fixtures'
+
+const renderApp = () =>
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>,
+  )
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),
@@ -36,22 +44,22 @@ describe('App', () => {
   })
 
   it('loads the saved search term from localStorage on mount', async () => {
-    localStorage.setItem('character-search-term', 'Morty')
+    localStorage.setItem('character-search-term', '"Morty"')
     fetchCharactersMock.mockResolvedValue(characterListFixture())
 
-    render(<App />)
+    renderApp()
 
     expect(screen.getByRole('textbox', { name: 'Search characters' })).toHaveValue('Morty')
-    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledWith('Morty'))
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledWith('Morty', 1, expect.any(AbortSignal)))
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument()
   })
 
   it('loads initial data when localStorage is empty', async () => {
-    fetchCharactersMock.mockResolvedValue([])
+    fetchCharactersMock.mockResolvedValue({ results: [], totalPages: 1 })
 
-    render(<App />)
+    renderApp()
 
-    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledWith(''))
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledWith('', 1, expect.any(AbortSignal)))
     expect(screen.getByRole('textbox', { name: 'Search characters' })).toHaveValue('')
     expect(await screen.findByText('No characters found for this search.')).toBeInTheDocument()
   })
@@ -61,18 +69,18 @@ describe('App', () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
 
     fetchCharactersMock
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce({ results: [], totalPages: 1 })
       .mockResolvedValueOnce(characterListFixture())
 
-    render(<App />)
+    renderApp()
 
-    await waitFor(() => expect(fetchCharactersMock).toHaveBeenNthCalledWith(1, ''))
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenNthCalledWith(1, '', 1, expect.any(AbortSignal)))
 
     await user.type(screen.getByRole('textbox', { name: 'Search characters' }), '  Rick  ')
     await user.click(screen.getByRole('button', { name: 'Search' }))
 
-    await waitFor(() => expect(fetchCharactersMock).toHaveBeenNthCalledWith(2, 'Rick'))
-    expect(setItemSpy).toHaveBeenCalledWith('character-search-term', 'Rick')
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenNthCalledWith(2, 'Rick', 1, expect.any(AbortSignal)))
+    expect(setItemSpy).toHaveBeenCalledWith('character-search-term', '"Rick"')
     expect(screen.getByRole('textbox', { name: 'Search characters' })).toHaveValue('Rick')
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument()
 
@@ -82,10 +90,10 @@ describe('App', () => {
   it('does not re-run the same search term', async () => {
     const user = userEvent.setup()
 
-    localStorage.setItem('character-search-term', 'Rick')
+    localStorage.setItem('character-search-term', '"Rick"')
     fetchCharactersMock.mockResolvedValue(characterListFixture())
 
-    render(<App />)
+    renderApp()
 
     await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledTimes(1))
     await user.click(screen.getByRole('button', { name: 'Search' }))
@@ -97,7 +105,7 @@ describe('App', () => {
     const deferred = createDeferred<ReturnType<typeof characterListFixture>>()
     fetchCharactersMock.mockReturnValue(deferred.promise)
 
-    render(<App />)
+    renderApp()
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading items...')
 
@@ -110,7 +118,7 @@ describe('App', () => {
   it('shows API errors when loading fails', async () => {
     fetchCharactersMock.mockRejectedValue(new Error('Unable to load characters.'))
 
-    render(<App />)
+    renderApp()
 
     expect(await screen.findByText('Unable to load characters.')).toBeInTheDocument()
   })
@@ -118,9 +126,9 @@ describe('App', () => {
   it('shows the error boundary fallback when the crash button is used and recovers after reset', async () => {
     const user = userEvent.setup()
 
-    fetchCharactersMock.mockResolvedValue([])
+    fetchCharactersMock.mockResolvedValue({ results: [], totalPages: 1 })
 
-    render(<App />)
+    renderApp()
 
     await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledTimes(1))
     await user.click(screen.getByRole('button', { name: 'Trigger Error' }))

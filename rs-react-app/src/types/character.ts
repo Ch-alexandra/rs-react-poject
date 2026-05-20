@@ -15,5 +15,11 @@ export interface CharacterApiItem {
 }
 
 export interface CharacterApiResponse {
+  info: { pages: number }
   results: CharacterApiItem[]
+}
+
+export interface CharacterListResult {
+  results: Character[]
+  totalPages: number
 }

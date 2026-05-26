@@ -35,7 +35,7 @@
 
 .flyout__btn--unselect {
   background-color: var(--flyout-btn-secondary, #444);
-  color: #fff;
+  color: var(--flyout-text, #fff);
 }
 
 .flyout__btn--unselect:hover {

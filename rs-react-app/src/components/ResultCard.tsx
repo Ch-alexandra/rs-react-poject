@@ -14,16 +14,12 @@ export function ResultCard({ item }: ResultCardProps) {
   const isSelected = selectedItems.some((s) => s.id === item.id)
 
   const handleCardClick = () => {
+    toggleItem(item)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('details', String(item.id))
       return next
     })
-  }
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation()
-    toggleItem(item)
   }
 
   return (
@@ -38,8 +34,9 @@ export function ResultCard({ item }: ResultCardProps) {
         type="checkbox"
         className="result-card-checkbox"
         checked={isSelected}
-        onChange={handleCheckboxChange}
+        onChange={() => toggleItem(item)}
         onClick={(e) => e.stopPropagation()}
+        style={{ cursor: 'pointer' }}
         aria-label={`Select ${item.name}`}
       />
       <img className="result-card-image" src={item.image} alt={item.name} loading="lazy" />

@@ -1,1 +1,1 @@
-export { useSelectedStore } from './selectedSlice'
+export { useSelectionStore } from './selectedSlice'

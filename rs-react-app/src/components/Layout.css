@@ -1,7 +1,7 @@
 .app-header {
-  background: linear-gradient(135deg, #0d1b2a 0%, #1a2e1f 100%);
-  border-bottom: 2px solid var(--portal-accent);
-  box-shadow: 0 2px 16px rgba(154, 252, 91, 0.15);
+  background: var(--header-bg);
+  border-bottom: 2px solid var(--header-border, var(--portal-accent));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -35,7 +35,7 @@
   font-family: 'Orbitron', 'Exo 2', sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--portal-accent);
+  color: var(--header-text, var(--portal-accent));
   letter-spacing: 0.04em;
 }
 
@@ -66,6 +66,23 @@
 
 .nav-link.active {
   filter: brightness(0.88);
+}
+
+.theme-toggle {
+  background: none;
+  border: 2px solid var(--header-border, var(--portal-accent));
+  border-radius: 0.625rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  line-height: 1;
+  color: var(--header-text, inherit);
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
 }
 
 @keyframes portal-spin {

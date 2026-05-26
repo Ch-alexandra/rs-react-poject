@@ -1,4 +1,4 @@
-import type { Character, CharacterApiItem } from '../types/character'
+import type { CharacterApiItem, CharacterDetail } from '../types/character'
 
 const BASE_URL =
   import.meta.env.DEV
@@ -8,7 +8,7 @@ const BASE_URL =
 export const fetchCharacterById = async (
   id: number,
   signal?: AbortSignal,
-): Promise<Character> => {
+): Promise<CharacterDetail> => {
   const response = await fetch(`${BASE_URL}${id}`, { signal })
 
   if (!response.ok) {
@@ -19,7 +19,13 @@ export const fetchCharacterById = async (
   return {
     id: item.id,
     name: item.name,
-    description: `${item.species}, ${item.status}, ${item.gender}`,
+    status: item.status,
+    species: item.species,
+    type: item.type,
+    gender: item.gender,
+    origin: item.origin.name,
+    location: item.location.name,
     image: item.image,
+    episodeCount: item.episode.length,
   }
 }

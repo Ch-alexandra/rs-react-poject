@@ -59,7 +59,7 @@
   padding: 0.75rem 0.875rem;
   font: inherit;
   color: var(--ink);
-  background: #ffffff;
+  background: var(--panel-bg);
 }
 
 .search-button,
@@ -130,7 +130,7 @@
   border-radius: 0.5rem;
   padding: 0.875rem;
   text-align: left;
-  background: #ffffff;
+  background: var(--panel-bg);
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -208,7 +208,7 @@
 }
 
 .error-text {
-  color: #c94f5a;
+  color: var(--error-color);
   font-weight: 600;
 }
 

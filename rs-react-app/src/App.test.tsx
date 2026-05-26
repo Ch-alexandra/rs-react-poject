@@ -1,17 +1,18 @@
 import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
+import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import App from './App'
 import { fetchCharacters } from './api/charactersApi'
 import { characterListFixture } from './test/fixtures'
 
-const renderApp = () =>
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>,
+const renderApp = (initialPath = '/') => {
+  const router = createMemoryRouter(
+    [{ path: '/', element: <App />, children: [{ path: 'details/:id', element: <div /> }] }],
+    { initialEntries: [initialPath] },
   )
+  return render(<RouterProvider router={router} />)
+}
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),

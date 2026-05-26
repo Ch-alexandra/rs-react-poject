@@ -1,26 +1,27 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { fetchCharacterById } from '../api/characterDetailApi'
-import type { Character } from '../types/character'
+import type { CharacterDetail } from '../types/character'
 import { Loader } from './Loader'
 import './DetailPanel.css'
 
 export function DetailPanel() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const detailId = searchParams.get('details')
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
-  const [character, setCharacter] = useState<Character | null>(null)
+  const [character, setCharacter] = useState<CharacterDetail | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!detailId) return
+    if (!id) return
 
     const controller = new AbortController()
     setIsLoading(true)
     setError(null)
 
-    fetchCharacterById(Number(detailId), controller.signal)
+    fetchCharacterById(Number(id), controller.signal)
       .then((data) => {
         setCharacter(data)
       })
@@ -33,17 +34,11 @@ export function DetailPanel() {
       })
 
     return () => controller.abort()
-  }, [detailId])
+  }, [id])
 
   const handleClose = () => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.delete('details')
-      return next
-    })
+    navigate({ pathname: '/', search: searchParams.toString() })
   }
-
-  if (!detailId) return null
 
   return (
     <aside className="detail-panel">
@@ -59,7 +54,15 @@ export function DetailPanel() {
         <>
           <img className="detail-image" src={character.image} alt={character.name} />
           <h2 className="detail-name">{character.name}</h2>
-          <p className="detail-description">{character.description}</p>
+          <div className="detail-info">
+            <div className="detail-row"><span className="detail-label">Status</span><span>{character.status}</span></div>
+            <div className="detail-row"><span className="detail-label">Species</span><span>{character.species}</span></div>
+            {character.type && <div className="detail-row"><span className="detail-label">Type</span><span>{character.type}</span></div>}
+            <div className="detail-row"><span className="detail-label">Gender</span><span>{character.gender}</span></div>
+            <div className="detail-row"><span className="detail-label">Origin</span><span>{character.origin}</span></div>
+            <div className="detail-row"><span className="detail-label">Location</span><span>{character.location}</span></div>
+            <div className="detail-row"><span className="detail-label">Episodes</span><span>{character.episodeCount}</span></div>
+          </div>
         </>
       )}
     </aside>

@@ -1,31 +1,20 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Character } from '../types/character'
+import { create } from 'zustand'
+import type { Character } from '../types/character'
 
 interface SelectedState {
   items: Character[]
+  toggleItem: (item: Character) => void
+  unselectAll: () => void
 }
 
-const initialState: SelectedState = {
+export const useSelectedStore = create<SelectedState>((set) => ({
   items: [],
-}
-
-const selectedSlice = createSlice({
-  name: 'selected',
-  initialState,
-  reducers: {
-    toggleItem(state, action: PayloadAction<Character>) {
-      const index = state.items.findIndex((item) => item.id === action.payload.id)
-      if (index !== -1) {
-        state.items.splice(index, 1)
-      } else {
-        state.items.push(action.payload)
+  toggleItem: (item) =>
+    set((state) => {
+      const exists = state.items.some((i) => i.id === item.id)
+      return {
+        items: exists ? state.items.filter((i) => i.id !== item.id) : [...state.items, item],
       }
-    },
-    unselectAll(state) {
-      state.items = []
-    },
-  },
-})
-
-export const { toggleItem, unselectAll } = selectedSlice.actions
-export default selectedSlice.reducer
+    }),
+  unselectAll: () => set({ items: [] }),
+}))

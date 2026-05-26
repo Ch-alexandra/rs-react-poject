@@ -14,7 +14,6 @@ export function ResultCard({ item }: ResultCardProps) {
   const isSelected = selectedItems.some((s) => s.id === item.id)
 
   const handleCardClick = () => {
-    toggleItem(item)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('details', String(item.id))

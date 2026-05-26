@@ -53,6 +53,6 @@
 }
 
 .detail-error {
-  color: #c0392b;
+  color: var(--error-color);
   font-size: 0.9rem;
 }

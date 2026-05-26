@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Outlet, useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import './App.css'
 import { fetchCharacters } from './api/charactersApi'
 import { CrashSimulator } from './components/CrashSimulator'
-import { DetailPanel } from './components/DetailPanel'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Pagination } from './components/Pagination'
 import { ResultsSection } from './components/ResultsSection'
@@ -16,7 +15,9 @@ const STORAGE_KEY = 'character-search-term'
 function App() {
   const [searchParams, setSearchParams] = useSearchParams()
   const currentPage = Math.max(1, Number(searchParams.get('page') ?? 1))
-  const hasDetail = Boolean(searchParams.get('details'))
+  const outlet = useOutlet()
+  const hasDetail = Boolean(outlet)
+  const navigate = useNavigate()
 
   const [savedTerm, setSavedTerm] = useLocalStorage<string>(STORAGE_KEY, '')
   const [searchInput, setSearchInput] = useState(savedTerm)
@@ -92,10 +93,22 @@ function App() {
     setShouldCrash(false)
   }
 
+  const handleCloseDetail = (): void => {
+    navigate({ pathname: '/', search: searchParams.toString() })
+  }
+
   return (
     <ErrorBoundary onReset={handleResetError}>
       <main className={`app-shell${hasDetail ? ' app-shell--split' : ''}`}>
-        <div className="app-main">
+        <div
+          className="app-main"
+          onClick={hasDetail ? handleCloseDetail : undefined}
+          role={hasDetail ? 'button' : undefined}
+          aria-label={hasDetail ? 'Close detail panel' : undefined}
+          tabIndex={hasDetail ? 0 : undefined}
+          onKeyDown={hasDetail ? (e) => e.key === 'Enter' && handleCloseDetail() : undefined}
+          style={hasDetail ? { cursor: 'pointer' } : undefined}
+        >
           <SearchPanel
             value={searchInput}
             isLoading={isLoading}
@@ -120,7 +133,7 @@ function App() {
           <CrashSimulator shouldCrash={shouldCrash} />
         </div>
 
-        {hasDetail && <DetailPanel />}
+        {hasDetail && <Outlet />}
       </main>
     </ErrorBoundary>
   )

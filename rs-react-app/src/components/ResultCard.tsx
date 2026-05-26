@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelectionStore } from '../store/selectedSlice'
 import type { Character } from '../types/character'
 
@@ -7,18 +7,23 @@ interface ResultCardProps {
 }
 
 export function ResultCard({ item }: ResultCardProps) {
-  const [, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const selectedItems = useSelectionStore((s) => s.selectedItems)
   const toggleItem = useSelectionStore((s) => s.toggleItem)
 
   const isSelected = selectedItems.some((s) => s.id === item.id)
 
-  const handleCardClick = () => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.set('details', String(item.id))
-      return next
-    })
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigate({ pathname: `/details/${item.id}`, search: searchParams.toString() })
+  }
+
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.stopPropagation()
+      navigate({ pathname: `/details/${item.id}`, search: searchParams.toString() })
+    }
   }
 
   return (
@@ -27,7 +32,7 @@ export function ResultCard({ item }: ResultCardProps) {
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
+      onKeyDown={handleCardKeyDown}
     >
       <input
         type="checkbox"

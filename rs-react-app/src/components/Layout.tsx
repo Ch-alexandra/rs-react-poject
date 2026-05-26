@@ -1,8 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Flyout } from './Flyout'
+import { useTheme } from '../context/useTheme'
 import './Layout.css'
 
 export function Layout() {
+  const { theme, toggleTheme } = useTheme()
+
   return (
     <>
       <header className="app-header">
@@ -18,6 +21,9 @@ export function Layout() {
             <NavLink to="/about" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
               About
             </NavLink>
+            <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
           </nav>
         </div>
       </header>

@@ -15,6 +15,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
+  min-height: 3.5rem;
 }
 
 .app-logo {
@@ -51,21 +52,37 @@
   font-weight: 600;
   padding: 0.5rem 1rem;
   border-radius: 0.625rem;
-  border: none;
+  border: 2px solid transparent;
   background: var(--portal-accent);
   font-family: 'Orbitron', 'Exo 2', sans-serif;
   cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: filter 0.2s ease, outline 0.1s ease;
   letter-spacing: 0.02em;
 }
 
 .nav-link:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
+  filter: brightness(1.1);
+  outline: 2px solid rgba(255,255,255,0.3);
+  outline-offset: 1px;
 }
 
 .nav-link.active {
   filter: brightness(0.88);
+}
+
+.theme-toggle {
+  background: none;
+  border: 2px solid var(--portal-accent);
+  border-radius: 0.625rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  filter: brightness(1.15);
 }
 
 @keyframes portal-spin {

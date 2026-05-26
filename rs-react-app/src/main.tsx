@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { Layout } from './components/Layout.tsx'
 import { AboutPage } from './pages/AboutPage'
 import { NotFoundPage } from './pages/404.tsx'
+import { ThemeProvider } from './context/ThemeProvider'
 
 const router = createHashRouter([
   {
@@ -17,4 +18,8 @@ const router = createHashRouter([
   },
 ])
 
-createRoot(document.getElementById('root')!).render(<RouterProvider router={router} />)
+createRoot(document.getElementById('root')!).render(
+  <ThemeProvider>
+    <RouterProvider router={router} />
+  </ThemeProvider>
+)

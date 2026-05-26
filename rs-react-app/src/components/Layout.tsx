@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { Flyout } from './Flyout'
 import './Layout.css'
 
 export function Layout() {
@@ -21,6 +22,7 @@ export function Layout() {
         </div>
       </header>
       <Outlet />
+      <Flyout />
     </>
   )
 }

@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
+import { useSelectionStore } from '../store/selectedSlice'
 import type { Character } from '../types/character'
 
 interface ResultCardProps {
@@ -7,8 +8,12 @@ interface ResultCardProps {
 
 export function ResultCard({ item }: ResultCardProps) {
   const [, setSearchParams] = useSearchParams()
+  const selectedItems = useSelectionStore((s) => s.selectedItems)
+  const toggleItem = useSelectionStore((s) => s.toggleItem)
 
-  const handleClick = () => {
+  const isSelected = selectedItems.some((s) => s.id === item.id)
+
+  const handleCardClick = () => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('details', String(item.id))
@@ -16,10 +21,27 @@ export function ResultCard({ item }: ResultCardProps) {
     })
   }
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    toggleItem(item)
+  }
+
   return (
-    <article className="result-card" onClick={handleClick} role="button" tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+    <article
+      className={`result-card${isSelected ? ' result-card--selected' : ''}`}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
     >
+      <input
+        type="checkbox"
+        className="result-card-checkbox"
+        checked={isSelected}
+        onChange={handleCheckboxChange}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={`Select ${item.name}`}
+      />
       <img className="result-card-image" src={item.image} alt={item.name} loading="lazy" />
       <div className="result-card-body">
         <h3>{item.name}</h3>

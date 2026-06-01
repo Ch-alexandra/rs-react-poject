@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Outlet, useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import './App.css'
-import { fetchCharacters } from './api/charactersApi'
 import { CrashSimulator } from './components/CrashSimulator'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Pagination } from './components/Pagination'
 import { ResultsSection } from './components/ResultsSection'
 import { SearchPanel } from './components/SearchPanel'
 import { useLocalStorage } from './hooks/useLocalStorage'
-import type { Character } from './types/character'
+import { useCharactersQuery } from './hooks/useCharactersQuery'
 
 const STORAGE_KEY = 'character-search-term'
 
@@ -22,37 +21,14 @@ function App() {
   const [savedTerm, setSavedTerm] = useLocalStorage<string>(STORAGE_KEY, '')
   const [searchInput, setSearchInput] = useState(savedTerm)
   const [submittedSearch, setSubmittedSearch] = useState(savedTerm)
-  const [items, setItems] = useState<Character[]>([])
-  const [totalPages, setTotalPages] = useState(1)
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [shouldCrash, setShouldCrash] = useState(false)
 
-  useEffect(() => {
-    const controller = new AbortController()
+  const { data, isFetching, error } = useCharactersQuery(submittedSearch, currentPage)
 
-    fetchCharacters(submittedSearch, currentPage, controller.signal)
-      .then((result) => {
-        setItems(result.results)
-        setTotalPages(result.totalPages)
-        setErrorMessage(null)
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return
-        const message =
-          error instanceof Error
-            ? error.message
-            : 'Something unexpected happened while loading results.'
-        setItems([])
-        setTotalPages(1)
-        setErrorMessage(message)
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [submittedSearch, currentPage])
+  const items = data?.results ?? []
+  const totalPages = data?.totalPages ?? 1
+  const isLoading = isFetching
+  const errorMessage = error ? error.message : null
 
   const handleInputChange = (value: string): void => {
     setSearchInput(value)
@@ -67,7 +43,6 @@ function App() {
 
     setSavedTerm(trimmedSearch)
     setSearchInput(trimmedSearch)
-    setIsLoading(true)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('page', '1')
@@ -77,7 +52,6 @@ function App() {
   }
 
   const handlePageChange = (page: number): void => {
-    setIsLoading(true)
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('page', String(page))

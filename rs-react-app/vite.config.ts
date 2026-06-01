@@ -5,4 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/rs-react-poject/',
   plugins: [react()],
+  server: {
+    proxy: {
+      '/rickandmorty': {
+        target: 'https://rickandmortyapi.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/rickandmorty/, ''),
+      },
+    },
+  },
 })

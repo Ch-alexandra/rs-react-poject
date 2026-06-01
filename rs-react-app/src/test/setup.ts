@@ -6,3 +6,8 @@ afterEach(() => {
   cleanup()
   localStorage.clear()
 })
+
+process.on('unhandledRejection', (reason) => {
+  if (reason instanceof TypeError && reason.message.includes('AbortSignal')) return
+  throw reason
+})

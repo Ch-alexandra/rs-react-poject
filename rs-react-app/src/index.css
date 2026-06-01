@@ -1,16 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Orbitron:wght@600;700&display=swap');
 
 :root {
-  --ink: #18313b;
-  --ink-soft: #58727c;
-  --paper: #f5f0e8;
-  --paper-2: #f5f0e8;
-  --panel-bg: #fbfbf8;
-  --panel-border: #b9c7cf;
-  --space: #a8d968;
+  --ink: #1a1a1a;
+  --ink-soft: #555555;
+  --paper: #ffffff;
+  --paper-2: #f9f9f9;
+  --panel-bg: #ffffff;
+  --panel-border: #d8d8d8;
+  --space: #f0f0f0;
   --portal: #2fb8a8;
   --portal-accent: #9afc5b;
   --portal-accent-soft: #dfffb0;
+  --header-bg: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  --error-color: #dc2626;
+  --link-color: #0ea5e9;
 
   font-family: 'Exo 2', 'Segoe UI', 'Trebuchet MS', sans-serif;
   color: var(--ink);
@@ -22,6 +25,48 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme='light'] {
+  --ink: #1a1a1a;
+  --ink-soft: #555555;
+  --paper: #ffffff;
+  --paper-2: #f9f9f9;
+  --panel-bg: #ffffff;
+  --panel-border: #d8d8d8;
+  --space: #f0f0f0;
+  --flyout-bg: #f1f5f9;
+  --flyout-text: #1a1a1a;
+  --flyout-btn-secondary: #e2e8f0;
+  --flyout-btn-secondary-hover: #cbd5e1;
+  --flyout-btn-primary: #e63946;
+  --flyout-btn-primary-hover: #c1121f;
+  --header-bg: #ffffff;
+  --header-border: #e2e8f0;
+  --header-text: #1a1a1a;
+  --error-color: #dc2626;
+  --link-color: #0ea5e9;
+}
+
+[data-theme='dark'] {
+  --ink: #f0f0f0;
+  --ink-soft: #a0a0a0;
+  --paper: #0f0f0f;
+  --paper-2: #1a1a1a;
+  --panel-bg: #1e1e1e;
+  --panel-border: #333333;
+  --space: #0a0a0a;
+  --flyout-bg: #1e1e1e;
+  --flyout-text: #f0f0f0;
+  --flyout-btn-secondary: #2a2a2a;
+  --flyout-btn-secondary-hover: #383838;
+  --flyout-btn-primary: #e63946;
+  --flyout-btn-primary-hover: #c1121f;
+  --header-bg: linear-gradient(135deg, #0d1b2a 0%, #1a2e1f 100%);
+  --header-border: #9afc5b;
+  --header-text: #f0f0f0;
+  --error-color: #f87171;
+  --link-color: #60a5fa;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -30,8 +75,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--space);
+  color: var(--ink);
 }
 
 #root {
   min-height: 100vh;
+  background: var(--space);
 }

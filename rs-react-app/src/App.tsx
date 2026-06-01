@@ -1,122 +1,123 @@
-import { Component } from 'react'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Outlet, useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import './App.css'
-import { fetchCharacters } from './api/charactersApi'
 import { CrashSimulator } from './components/CrashSimulator'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { Pagination } from './components/Pagination'
 import { ResultsSection } from './components/ResultsSection'
 import { SearchPanel } from './components/SearchPanel'
-import type { Character } from './types/character'
-
-interface AppState {
-  searchInput: string
-  submittedSearch: string
-  items: Character[]
-  isLoading: boolean
-  errorMessage: string | null
-  shouldCrash: boolean
-}
+import { useLocalStorage } from './hooks/useLocalStorage'
+import { useCharactersQuery, CHARACTERS_QUERY_KEY } from './hooks/useCharactersQuery'
 
 const STORAGE_KEY = 'character-search-term'
 
-class App extends Component<object, AppState> {
-    handleResetError = (): void => {
-      this.setState({ shouldCrash: false })
-    }
-  state: AppState = {
-    searchInput: '',
-    submittedSearch: '',
-    items: [],
-    isLoading: false,
-    errorMessage: null,
-    shouldCrash: false,
+function App() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentPage = Math.max(1, Number(searchParams.get('page') ?? 1))
+  const outlet = useOutlet()
+  const hasDetail = Boolean(outlet)
+  const navigate = useNavigate()
+
+  const [savedTerm, setSavedTerm] = useLocalStorage<string>(STORAGE_KEY, '')
+  const [searchInput, setSearchInput] = useState(savedTerm)
+  const [submittedSearch, setSubmittedSearch] = useState(savedTerm)
+  const [shouldCrash, setShouldCrash] = useState(false)
+
+  const queryClient = useQueryClient()
+  const { data, isFetching, error } = useCharactersQuery(submittedSearch, currentPage)
+
+  const items = data?.results ?? []
+  const totalPages = data?.totalPages ?? 1
+  const isLoading = isFetching
+  const errorMessage = error ? error.message : null
+
+  const handleInputChange = (value: string): void => {
+    setSearchInput(value)
   }
 
-  componentDidMount(): void {
-    const savedTerm = localStorage.getItem(STORAGE_KEY) ?? ''
+  const handleSearch = (): void => {
+    const trimmedSearch = searchInput.trim()
 
-    this.setState(
-      {
-        searchInput: savedTerm,
-        submittedSearch: savedTerm,
-      },
-      () => {
-        this.loadItems(savedTerm)
-      },
-    )
-  }
-
-  handleInputChange = (value: string): void => {
-    this.setState({ searchInput: value })
-  }
-
-  handleSearch = (): void => {
-    const trimmedSearch = this.state.searchInput.trim()
-
-    if (trimmedSearch === this.state.submittedSearch) {
+    if (trimmedSearch === submittedSearch) {
       return
     }
 
-    localStorage.setItem(STORAGE_KEY, trimmedSearch)
-
-    this.setState(
-      {
-        searchInput: trimmedSearch,
-        submittedSearch: trimmedSearch,
-      },
-      () => {
-        this.loadItems(trimmedSearch)
-      },
-    )
+    setSavedTerm(trimmedSearch)
+    setSearchInput(trimmedSearch)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', '1')
+      return next
+    })
+    setSubmittedSearch(trimmedSearch)
   }
 
-  handleCrashTest = (): void => {
-    this.setState({ shouldCrash: true })
+  const handlePageChange = (page: number): void => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('page', String(page))
+      return next
+    })
   }
 
-  loadItems = async (term: string): Promise<void> => {
-    this.setState({ isLoading: true, errorMessage: null })
-
-    try {
-      const items = await fetchCharacters(term)
-      this.setState({ items })
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Something unexpected happened while loading results.'
-
-      this.setState({ items: [], errorMessage: message })
-    } finally {
-      this.setState({ isLoading: false })
-    }
+  const handleRefresh = (): void => {
+    void queryClient.invalidateQueries({ queryKey: CHARACTERS_QUERY_KEY(submittedSearch, currentPage) })
   }
 
-  render() {
-    const { searchInput, isLoading, items, errorMessage, shouldCrash } = this.state
+  const handleCrashTest = (): void => {
+    setShouldCrash(true)
+  }
 
-    return (
-      <ErrorBoundary onReset={this.handleResetError}>
-        <main className="app-shell">
+  const handleResetError = (): void => {
+    setShouldCrash(false)
+  }
+
+  const handleCloseDetail = (): void => {
+    navigate({ pathname: '/', search: searchParams.toString() })
+  }
+
+  return (
+    <ErrorBoundary onReset={handleResetError}>
+      <main className={`app-shell${hasDetail ? ' app-shell--split' : ''}`}>
+        <div
+          className="app-main"
+          onClick={hasDetail ? handleCloseDetail : undefined}
+          role={hasDetail ? 'button' : undefined}
+          aria-label={hasDetail ? 'Close detail panel' : undefined}
+          tabIndex={hasDetail ? 0 : undefined}
+          onKeyDown={hasDetail ? (e) => e.key === 'Enter' && handleCloseDetail() : undefined}
+          style={hasDetail ? { cursor: 'pointer' } : undefined}
+        >
           <SearchPanel
             value={searchInput}
             isLoading={isLoading}
-            onInputChange={this.handleInputChange}
-            onSearch={this.handleSearch}
+            onInputChange={handleInputChange}
+            onSearch={handleSearch}
+            onRefresh={handleRefresh}
           />
 
           <ResultsSection items={items} isLoading={isLoading} errorMessage={errorMessage} />
 
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+
           <div className="crash-zone">
-            <button type="button" className="danger-button" onClick={this.handleCrashTest}>
+            <button type="button" className="danger-button" onClick={handleCrashTest}>
               Trigger Error
             </button>
           </div>
 
           <CrashSimulator shouldCrash={shouldCrash} />
-        </main>
-      </ErrorBoundary>
-    )
-  }
+        </div>
+
+        {hasDetail && <Outlet />}
+      </main>
+    </ErrorBoundary>
+  )
 }
 
 export default App

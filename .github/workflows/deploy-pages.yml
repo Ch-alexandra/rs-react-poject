@@ -3,8 +3,7 @@
 on:
   push:
     branches:
-      - main
-      - unit-testing
+      - '**'
   workflow_dispatch:
 
 permissions:

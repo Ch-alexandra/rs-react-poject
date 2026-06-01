@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { fetchCharacterById } from '../api/characterDetailApi'
-import type { CharacterDetail } from '../types/character'
+import { useCharacterDetailQuery } from '../hooks/useCharacterDetailQuery'
 import { Loader } from './Loader'
 import './DetailPanel.css'
 
@@ -10,31 +8,11 @@ export function DetailPanel() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [character, setCharacter] = useState<CharacterDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const numericId = id ? Number(id) : undefined
+  const { data: character, isFetching, error } = useCharacterDetailQuery(numericId)
 
-  useEffect(() => {
-    if (!id) return
-
-    const controller = new AbortController()
-    setIsLoading(true)
-    setError(null)
-
-    fetchCharacterById(Number(id), controller.signal)
-      .then((data) => {
-        setCharacter(data)
-      })
-      .catch((err) => {
-        if (controller.signal.aborted) return
-        setError(err instanceof Error ? err.message : 'Failed to load character.')
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
-      })
-
-    return () => controller.abort()
-  }, [id])
+  const isLoading = isFetching
+  const errorMessage = error ? error.message : null
 
   const handleClose = () => {
     navigate({ pathname: '/', search: searchParams.toString() })
@@ -48,9 +26,9 @@ export function DetailPanel() {
 
       {isLoading && <Loader />}
 
-      {error && <p className="detail-error">{error}</p>}
+      {errorMessage && <p className="detail-error">{errorMessage}</p>}
 
-      {!isLoading && !error && character && (
+      {!isLoading && !errorMessage && character && (
         <>
           <img className="detail-image" src={character.image} alt={character.name} />
           <h2 className="detail-name">{character.name}</h2>

@@ -1,7 +1,10 @@
 import { createRoot } from 'react-dom/client'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createHashRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
+import { queryClient } from './api/queryClient.ts'
 import { Layout } from './components/Layout.tsx'
 import { DetailPanel } from './components/DetailPanel.tsx'
 import { AboutPage } from './pages/AboutPage'
@@ -26,7 +29,10 @@ const router = createHashRouter([
 ])
 
 createRoot(document.getElementById('root')!).render(
-  <ThemeProvider>
-    <RouterProvider router={router} />
-  </ThemeProvider>
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+    <ReactQueryDevtools initialIsOpen={false} />
+  </QueryClientProvider>
 )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Outlet, useNavigate, useOutlet, useSearchParams } from 'react-router-dom'
 import './App.css'
 import { CrashSimulator } from './components/CrashSimulator'
@@ -7,7 +8,7 @@ import { Pagination } from './components/Pagination'
 import { ResultsSection } from './components/ResultsSection'
 import { SearchPanel } from './components/SearchPanel'
 import { useLocalStorage } from './hooks/useLocalStorage'
-import { useCharactersQuery } from './hooks/useCharactersQuery'
+import { useCharactersQuery, CHARACTERS_QUERY_KEY } from './hooks/useCharactersQuery'
 
 const STORAGE_KEY = 'character-search-term'
 
@@ -23,6 +24,7 @@ function App() {
   const [submittedSearch, setSubmittedSearch] = useState(savedTerm)
   const [shouldCrash, setShouldCrash] = useState(false)
 
+  const queryClient = useQueryClient()
   const { data, isFetching, error } = useCharactersQuery(submittedSearch, currentPage)
 
   const items = data?.results ?? []
@@ -59,6 +61,10 @@ function App() {
     })
   }
 
+  const handleRefresh = (): void => {
+    void queryClient.invalidateQueries({ queryKey: CHARACTERS_QUERY_KEY(submittedSearch, currentPage) })
+  }
+
   const handleCrashTest = (): void => {
     setShouldCrash(true)
   }
@@ -88,6 +94,7 @@ function App() {
             isLoading={isLoading}
             onInputChange={handleInputChange}
             onSearch={handleSearch}
+            onRefresh={handleRefresh}
           />
 
           <ResultsSection items={items} isLoading={isLoading} errorMessage={errorMessage} />

@@ -5,9 +5,10 @@ interface SearchPanelProps {
   isLoading: boolean
   onInputChange: (value: string) => void
   onSearch: () => void
+  onRefresh: () => void
 }
 
-export function SearchPanel({ value, isLoading, onInputChange, onSearch }: SearchPanelProps) {
+export function SearchPanel({ value, isLoading, onInputChange, onSearch, onRefresh }: SearchPanelProps) {
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     onInputChange(event.target.value)
   }
@@ -31,6 +32,15 @@ export function SearchPanel({ value, isLoading, onInputChange, onSearch }: Searc
           disabled={isLoading}
         >
           Search
+        </button>
+        <button
+          type="button"
+          className="refresh-button"
+          onClick={onRefresh}
+          disabled={isLoading}
+          aria-label="Refresh results"
+        >
+          Refresh
         </button>
       </div>
     </section>

@@ -63,6 +63,7 @@
 }
 
 .search-button,
+.refresh-button,
 .danger-button {
   border: none;
   border-radius: 0.625rem;
@@ -79,16 +80,24 @@
   background: var(--portal-accent);
 }
 
+.refresh-button {
+  color: #18313b;
+  background: var(--portal-accent);
+  border: 1.5px solid var(--portal-accent);
+}
+
 .search-button::after {
   content: '';
 }
 
-.search-button:disabled {
+.search-button:disabled,
+.refresh-button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
 
 .search-button:hover:not(:disabled),
+.refresh-button:hover:not(:disabled),
 .danger-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.06);

@@ -2,16 +2,32 @@ import { render, screen, waitFor, waitForElementToBeRemoved } from '@testing-lib
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { fetchCharacters } from './api/charactersApi'
 import { characterListFixture } from './test/fixtures'
 
+const makeQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: 5 * 60 * 1000 },
+    },
+  })
+
 const renderApp = (initialPath = '/') => {
+  const queryClient = makeQueryClient()
   const router = createMemoryRouter(
     [{ path: '/', element: <App />, children: [{ path: 'details/:id', element: <div /> }] }],
     { initialEntries: [initialPath] },
   )
-  return render(<RouterProvider router={router} />)
+  return {
+    queryClient,
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+  }
 }
 
 vi.mock('./api/charactersApi', () => ({
@@ -141,5 +157,33 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Character Search' })).toBeInTheDocument()
     })
+  })
+
+  it('invalidates cache and refetches when the refresh button is clicked', async () => {
+    const user = userEvent.setup()
+
+    fetchCharactersMock.mockResolvedValue(characterListFixture())
+
+    renderApp()
+
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledTimes(1))
+
+    await user.click(screen.getByRole('button', { name: 'Refresh results' }))
+
+    await waitFor(() => expect(fetchCharactersMock).toHaveBeenCalledTimes(2))
+  })
+
+  it('stores fetched data in cache and does not refetch while data is fresh', async () => {
+    fetchCharactersMock.mockResolvedValue(characterListFixture())
+
+    const { queryClient } = renderApp()
+
+    await screen.findByText('Rick Sanchez')
+    expect(fetchCharactersMock).toHaveBeenCalledTimes(1)
+
+    const cached = queryClient.getQueryData(['characters', '', 1])
+    expect(cached).toBeDefined()
+
+    expect(fetchCharactersMock).toHaveBeenCalledTimes(1)
   })
 })

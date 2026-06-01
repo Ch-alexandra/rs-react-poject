@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 import { DetailPanel } from './DetailPanel'
 import { fetchCharacterById } from '../api/characterDetailApi'
@@ -12,12 +13,23 @@ vi.mock('../api/characterDetailApi', () => ({
 
 const fetchMock = vi.mocked(fetchCharacterById)
 
+const makeQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60 * 1000 } } })
+
 const renderPanel = (id?: string) => {
+  const queryClient = makeQueryClient()
   const router = createMemoryRouter(
     [{ path: '/details/:id', element: <DetailPanel /> }],
     { initialEntries: id ? [`/details/${id}`] : ['/details/1'] },
   )
-  return render(<RouterProvider router={router} />)
+  return {
+    queryClient,
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+  }
 }
 
 describe('DetailPanel', () => {
@@ -27,6 +39,14 @@ describe('DetailPanel', () => {
     fetchMock.mockRejectedValue(new Error('Character not found.'))
     const { container } = renderPanel('999')
     expect(container.firstChild).not.toBeNull()
+  })
+
+  it('shows a loading indicator while fetching', () => {
+    fetchMock.mockReturnValue(new Promise(() => {}))
+
+    renderPanel('1')
+
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('fetches and displays character when details param is set', async () => {

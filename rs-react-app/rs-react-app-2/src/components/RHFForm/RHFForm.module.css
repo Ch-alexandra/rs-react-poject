@@ -28,8 +28,8 @@
 
 .field input:focus,
 .field select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: #6ca354;
+  box-shadow: 0 0 0 3px rgba(108, 163, 84, 0.15);
 }
 
 .checkboxField {
@@ -109,7 +109,7 @@
 .submitBtn {
   margin-top: 8px;
   padding: 10px 24px;
-  background: #6366f1;
+  background: #6ca354;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -121,10 +121,10 @@
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: #4f46e5;
+  background: #86c869;
 }
 
 .submitBtn:disabled {
-  background: #a5b4fc;
+  background: #95ad8a;
   cursor: not-allowed;
 }

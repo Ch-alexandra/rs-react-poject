@@ -109,7 +109,7 @@
 .submitBtn {
   margin-top: 8px;
   padding: 10px 24px;
-  background: #6366f1;
+  background: #6ca354;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -121,5 +121,5 @@
 }
 
 .submitBtn:hover {
-  background: #4f46e5;
+  background: #86c869;
 }

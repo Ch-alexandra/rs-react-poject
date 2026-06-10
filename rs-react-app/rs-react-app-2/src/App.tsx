@@ -2,26 +2,40 @@ import { useState } from 'react'
 import { Modal } from './components/Modal/Modal'
 import { UncontrolledForm } from './components/UncontrolledForm/UncontrolledForm'
 import { RHFForm } from './components/RHFForm/RHFForm'
-import './App.css'
+import { SubmissionCard } from './components/SubmissionCard/SubmissionCard'
+import { useAppSelector } from './store'
+import styles from './App.module.css'
 
 type ModalType = 'uncontrolled' | 'rhf' | null
 
 function App() {
   const [openModal, setOpenModal] = useState<ModalType>(null)
+  const submissions = useAppSelector((s) => s.submissions.items)
 
   return (
-    <>
-      <section id="center">
-        <h1>React Forms</h1>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button type="button" onClick={() => setOpenModal('uncontrolled')}>
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <div className={styles.actions}>
+          <button type="button" className={styles.btn} onClick={() => setOpenModal('uncontrolled')}>
             Uncontrolled Form
           </button>
-          <button type="button" onClick={() => setOpenModal('rhf')}>
+          <button type="button" className={styles.btn} onClick={() => setOpenModal('rhf')}>
             RHF Form
           </button>
         </div>
-      </section>
+      </header>
+
+      {submissions.length === 0 ? (
+        <p className={styles.empty}>No submissions yet. Fill out a form above!</p>
+      ) : (
+        <ul className={styles.list}>
+          {submissions.map((s) => (
+            <li key={s.id}>
+              <SubmissionCard submission={s} />
+            </li>
+          ))}
+        </ul>
+      )}
 
       <Modal
         isOpen={openModal === 'uncontrolled'}
@@ -38,10 +52,7 @@ function App() {
       >
         <RHFForm onSuccess={() => setOpenModal(null)} />
       </Modal>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </div>
   )
 }
 
